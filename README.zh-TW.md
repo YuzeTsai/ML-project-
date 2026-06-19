@@ -1,6 +1,10 @@
 # ML 專案：循環經濟與台灣
 
 **以機器學習方法探討循環經濟對台灣經濟與環境的影響**
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![R](https://img.shields.io/badge/R-4.2+-276DC3.svg)](https://www.r-project.org/)
+[![Paper](https://img.shields.io/badge/Paper-PDF-red.svg)](Project.pdf)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [English](README.md) · 蔡佑澤 · 2025 年 5 月
 
