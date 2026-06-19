@@ -1,6 +1,10 @@
 # ML Project: Circular Economy & Taiwan
 
 **A Machine Learning Approach for Investigating the Impact of Circular Economy on Taiwan's Economy and the Environment**
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![R](https://img.shields.io/badge/R-4.2+-276DC3.svg)](https://www.r-project.org/)
+[![Paper](https://img.shields.io/badge/Paper-PDF-red.svg)](Project.pdf)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [繁體中文版](README.zh-TW.md) · Yuze Tsai · May 2025
 
