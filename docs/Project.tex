@@ -1,0 +1,1096 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath, amssymb, mathtools, bbm}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage[x11names]{xcolor}
+\usepackage{framed}
+\usepackage{enumitem}
+\usepackage[margin=3cm]{geometry} 
+\usepackage{fancyhdr}   
+\usepackage{titling}    
+\usepackage{float}
+\usepackage{minted}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage[english]{babel} % 设置文档语言为英文
+\usepackage{wrapfig}
+\usepackage{lipsum}
+\usepackage{lastpage} % 处理页码计算
+\usepackage{booktabs} % For table formatting
+\usepackage{siunitx} % For number formatting in tables
+\usepackage[round]{natbib}
+
+
+
+\newtcolorbox[auto counter, number within=section]{mybox}[2][]{%
+    title=Mybox~\thetcbcounter: #2, #1}
+
+% 代码高亮
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
+\renewcommand{\headrulewidth}{0.4pt} 
+\renewcommand{\footrulewidth}{0pt} 
+\setlength{\headheight}{15pt}   
+\setlength{\parindent}{22pt}    
+\pagestyle{fancy}               
+\lhead{\leftmark}               
+\chead{}                        
+\rhead{}               
+\cfoot{}
+
+\fancyhf{} % 清除默认页眉页脚
+\fancyfoot[C]{Page \thepage\ of \pageref{LastPage}}
+\fancyhead[L]{\nouppercase{\leftmark}}
+
+\title{\textbf{A Machine Learning Approach for Investigating the Impact of Circular Economy on Taiwan's Economy and the Environment}}
+\author{YUZE TSAI}
+
+\begin{document}
+\begingroup
+\renewcommand{\baselinestretch}{1.5} % 设置行距
+\maketitle
+\hypersetup{linkcolor=black}
+
+\tableofcontents
+\endgroup
+
+\newpage
+
+\begin{abstract}
+    This study innovatively investigates the impact of circular economy practices on Taiwan’s economic development and environmental performance through both traditional econometric and modern machine learning approaches. 
+    Utilising a self-prepared panel dataset spanning 22 cities/counties from 2014 to 2023, we analyse how those key circular economy indicators—including waste recycling rates, renewable energy capacity, and environmental budget allocation—relate to three critical outcomes: household income, per capita electricity usage, and housing vacancy rates. 
+    Furthermore, the SHAP value is introduced to interpret non-linear models' predictions and assess feature importance. 
+    Results suggest that environmental budget allocation and renewable energy capacity positively influence income levels, while food waste is associated with increased electricity use and housing inefficiency. 
+    Additionally, we found out that the Machine learning models consistently outperform traditional methods in predictive accuracy, underscoring their value in policy-oriented socioeconomic analysis. 
+    The findings highlight the multifaceted effects of circular economy strategies and provide some clairvoyance guidance for evidence-based policymaking in sustainable development.
+\end{abstract}
+
+\newpage
+\section{Introduction}
+\subsection{What is the Circular Economy?}
+The concept of circular economy arose in 1966, when Kenneth Boundling, the American economist, proposed the idea of "Spaceship Economy", considering that people must find the way of recycling the resources to achieve sustainability on the planet, or we will doom once the paucity of resource leverage to an irrecoverable level.
+Since that proposal, this concept is becoming more and more popular nowadays, with the emerging conscious and international consensus on protecting the environment.
+Although there may exist some nuances on the definition of circular economy, we may have a look at the gross performance of the Ellen MacArthur Foundation (EMF), which has concentrated on the devotion to global transformation of circular economy. According to their statement, circular economy can be defined as establishing a renewable and recyclable economy system and minimizing the waste we create.
+And from Weetman's handbook (2016) talking about the circular economy, he summarized the six necessary factors of the circular economy framework, which translate the four principles of this concept, shown in the figure 1
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/sustainability-10-02141-g001.png}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+, which effectively give us a large amount of flavoring on constructing the idea of circular economy. \\
+Upon mentioning those theoretical concepts, what exactly did the governments do worldwide? In 2015, the European Commission announced its first circular economy action plan. It included measures to help stimulate Europe's transition towards a circular economy, boost global competitiveness, foster sustainable economic growth, and generate new jobs.
+After the first, the European Commission adopted the new circular economy action plan (CEAP) in March 2020, their new action plan promoting initiatives throughout the life cycle of products. It targeted how products are designed, promotes circular economy processes, encourages sustainable consumption, and aims to ensure that waste is prevented and that the resources used are kept in the EU economy for as long as possible.
+Except for EU countries, our government launched the "5+2 Industrial Innovation Plan" in 2016, with the "circular economy" and "new agriculture" being key strategies for Taiwan's national transformation.
+Additionally, the Resource Circulation Administration, Ministry of Environment stated (2023) that Taiwan's total material input has reached 300 million metric tons, with over 70\% relying on imports, and after deducting processed and re-exported portions, the actual domestic consumption exceeds 200 million metric tons, averaging around 11 metric tons of material per person per year.
+Meanwhile, Taiwan generates approximately 30 million metric tons of waste annually. Given the limitations of resources and environmental burdens, the key challenge for both the Environmental Protection Administration and various industries is how do we reintegrate materials from the "vein industry" back into the "artery industry" for circular reuse,
+ensuring that waste resources are returned to industrial production processes.
+
+\subsection{Variables of Interest}
+Then how do we select the variable? In Tanatu, A., et al. (2018)'s study on the dependencies between those indicators for a Circular Economy in the European Union, their conclusion suggested that resource productivity and domestic material consumption exist a strong statistical relationship with municipal waste recycling, and showed that an increment is associated with a positive change in municipal waste recycling.
+Additionally, The Ex'TAX project thought tax systems that subsidize the fossil fuels and other polluters are a major barrier on the transformation from linear economy to the circular economy, and thus they called for a price (tax) on natural resource use and pollution, which would provide incentives to save resources and the natural world. And their 2022 study on the added value and additional costs of circular construction at the Floriade, Dutch, drew the conclusion that tax shift can accelerate the transition to circular in construction industry.
+Last but not the least, Radivojević, V., et al. (2024) examined the impact of circular economy indicators on gross domestic product (GDP) per capita in the EU, and they obtained the results aligned with their assumptions, which indicated a strong positive correlation between circular economy indicators and GDP per capita. Also, their results also revealed a positive and statistically significant impact of Resource Productivity (RP), Generation of municipal waste per capita (MWpc), and Recycling rate of municipal waste (RRMW) on economic growth (GDPpc).
+Since this study will focus on cross-city, in contrast to the previous sections that emphasized national-level differences, we build upon the theoretical foundations discussed earlier and conduct an extensive review of existing outstanding studies. Based on these frameworks, we replace the measurement of GDP and resource productivity with the total income of each city and electricity consumption, respectively, to better correspond to the assessment of economic development and resource utilization in a particular city.
+
+\subsection{Hypothesis}
+Last but not the least, let us give some intuitive clairvoyance about our analysis results, those hypothesis combine with intuitive guessing and the empirical results made from others, stating as follows:
+\begin{itemize}
+    \item \textbf{Hypothesis 1: }Environmental budgets, regulations(findings)and recycling efforts have a positive effect with the electricity efficiency(i.e. negative on per capita electricity usage).
+    \item \textbf{Hypothesis 2: }Higher levels of landfill usage and incineration rate, but being poor on recycling practices are negatively associated with household income.
+    \item \textbf{Hypothesis 3: }Per capita food waste and Per capita generation of general waste are positive correlated to the household income and electricity usage per capita (i.e. less electricity efficiency), at the same time, they are negative correlated to Vancancy rate. 
+    \item \textbf{Hypothesis 4: }Per capita of capacity of renewable energy are positive correlated to household income and electricity efficiency(i.e. negative correlation with per capita electricity usage).
+\end{itemize}
+
+
+
+
+
+\section{Data Collections}
+For the present research, I utilize a dataset covering multiple cities/counties, comprising 19 variables related to economic development, energy consumption, environmental policies, and pollution indicators. The dataset is structured as a panel, including observations over 10 years (from 2014 to 2023), allowing for both cross-sectional and temporal analysis.
+\subsection{Data Sources}
+The data were collected from various official sources, including government statistical reports, environmental agencies, and energy-related institutions. The key sources include:
+\begin{itemize}
+    \item \textbf{Economic and energy data:} Taiwan Power Company
+    \item \textbf{Environmental policy and taxation data:} Directorate-General of Budget, Accounting and Statistics, Executive Yuan, R.O.C (Taiwan)
+    \item \textbf{Pollution and waste management data:} Directorate-General of Budget, Accounting and Statistics, Executive Yuan, R.O.C (Taiwan)
+\end{itemize}
+
+\subsection{Variables Description}
+The dataset consists of dependent variables measuring economic and energy consumption outcomes, and various independent variables capturing environmental policies, waste management, and related factors.
+
+\subsubsection{Dependent Variables}
+\begin{itemize}
+    \item \textbf{Household Income from Total Earnings} (in thousand NTD) – Represents the overall economic output of each administrative region.
+    \item \textbf{Per Capita Electricity Usage} (kWh per person) – Measures energy usage efficiency at the local level.
+    \item \textbf{Vacancy Rate of House} (percentage) – Used as a proxy for assessing housing market dynamics and regional economic conditions.
+\end{itemize}
+
+\subsubsection{Independent and Policy-Related Variables}
+To assess the impact of circular economy policies on economic development and productivity, the following key indicators are included:
+
+\begin{itemize}
+   
+    \item \textbf{Waste Management and Recycling Indicators:}
+    \begin{itemize}
+        \item General waste recycling rate (\%)
+        \item Per capita incinerated waste volume (kg)
+        \item Per capita landfilled waste volume (kg)
+        \item Per capita resource recovery by local authorities (kg)
+        \item Per capita generation of general waste (kg)
+        \item Per capita food waste (kg)
+    \end{itemize}
+
+    \item \textbf{Environmental Expenditures:}
+    \begin{itemize}
+        \item Budget structure ratio for community development and environmental protection (\%)
+    \end{itemize}
+
+    \item \textbf{Environmental Penalties:}
+    \begin{itemize}
+        \item Proportion of environmental fines (\%)
+    \end{itemize}
+
+    \item \textbf{Renewable Energy Infrastructure:}
+    \begin{itemize}
+        \item Per capita installed capacity of renewable energy (MW)
+    \end{itemize}
+    
+\end{itemize}
+
+\subsection{Summary Table of Variables}
+The following tables provide a statistical summary of the key variables used in the analysis, including count, mean, standard deviation, minimum, 25th percentile, median, 75th percentile, and maximum values. The variables are split into two tables for clarity.
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \begin{tabular}{l S[round-precision=1,round-mode=places] S[round-precision=1,round-mode=places] S[round-precision=1,round-mode=places] S[round-precision=1,round-mode=places]}
+    \toprule
+     & {Household\_income} & {General\_waste\_recycling\_rate} & {Budget\_ratio\_for\_environmental} & {Proportion\_of\_environmental\_fines} \\
+    \midrule
+    count & 200.0 & 220.0 & 220.0 & 220.0 \\
+    mean & 1158675.0 & 58.0 & 4.4 & 5.6 \\
+    std & 247155.9 & 6.7 & 2.5 & 5.2 \\
+    min & 746981.0 & 44.5 & 0.4 & 0.1 \\
+    25\% & 963350.5 & 54.0 & 2.1 & 3.0 \\
+    50\% & 1099166.0 & 57.8 & 4.8 & 4.8 \\
+    75\% & 1300000.0 & 61.3 & 6.4 & 7.0 \\
+    max & 1851383.0 & 78.2 & 9.4 & 61.6 \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:summary-stats-part1}
+    \end{table}
+    
+    \begin{table}[H]
+        \centering
+        \footnotesize
+        \begin{tabular}{l S S S S}
+        \toprule
+         & {p-c\_electricity\_usage} & {p-c\_incinerated\_waste\_kg} & {p-c\_landfilled\_waste\_kg} & {p-c\_resource\_recovery\_by\_local\_authorities\_kg} \\
+        \midrule
+        count & 220.0 & 220.0 & 147.0 & 220.0 \\
+        mean & 8842.4 & 153.3 & 15.2 & 210.1 \\
+        std & 6208.9 & 57.7 & 29.6 & 59.9 \\
+        min & 1197.5 & 8.6 & 0.0 & 84.6 \\
+        25\% & 5109.6 & 117.2 & 0.3 & 164.3 \\
+        50\% & 6914.5 & 158.1 & 1.8 & 210.6 \\
+        75\% & 11784.4 & 184.4 & 10.1 & 251.4 \\
+        max & 61171.0 & 295.0 & 158.7 & 346.4 \\
+        \bottomrule
+        \end{tabular}
+        \label{tab:summary-stats-part2}
+        \end{table}
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabular}{l S S S S}
+\toprule
+ & {p-c\_generation\_of\_general\_waste\_kg} & {p-c\_t\_capacity\_of\_renewable\_energy} & {Vancancy\_rate} & {p-c\_food\_waste\_kg} \\
+\midrule
+count & 220.0 & 220.0 & 220.0 & 220.0 \\
+mean & 413.0 & 0.4 & 11.0 & 29.5 \\
+std & 101.9 & 0.5 & 2.6 & 29.2 \\
+min & 189.3 & 0.0 & 6.2 & 9.2 \\
+25\% & 339.1 & 0.0 & 9.3 & 15.6 \\
+50\% & 404.4 & 0.2 & 10.6 & 23.7 \\
+75\% & 479.9 & 0.5 & 12.3 & 31.5 \\
+max & 714.3 & 2.6 & 18.2 & 248.2 \\
+\bottomrule
+\end{tabular}
+\label{tab:summary-stats-part3}
+\end{table}
+
+\subsection{Data Processing}
+To ensure data consistency and suitability for statistical and machine learning models, the dataset undergoes several preprocessing steps:
+\begin{itemize}
+    \item \textbf{Handling missing values:} Interpolation or mean imputation is applied where necessary.
+    \item \textbf{Standardization and normalization:} Key variables are standardized to facilitate model convergence.
+    \item \textbf{Panel data structuring:} The dataset is formatted to align with panel regression requirements, incorporating both city and year fixed effects where applicable.
+\end{itemize}
+
+The analysis will cover the period from \textbf{2014 to 2023} to capture the changes and impacts following Taoyuan's administrative restructuring of cities and counties in 2014, allowing for the observation of both the short-term and long-term effects of circular economy policies. This time frame also provides a comprehensive view of the evolving trends in economic performance, energy consumption, and environmental indicators.
+
+\section{Methods}
+For this study, we will dive into different kinds of machine learning methods, both linear and non-linear, and analyze which methods included could be the best predictor.
+\subsection{Linear Approach -- Panel Data Regression Model}
+First of all, we employ a panel data regression model. Panel data combines longitudinal (time-series) and cross-sectional data, allowing us to control for unobservable individual heterogeneity and improve estimation accuracy.
+However, for those unobservable variables, which might introduce correlation issues, we need to specify which type of panel data models will be applied in our test.
+\subsubsection{Fixed Effects Model} 
+Assumes that individual characteristics are time-invariant and correlated with the explanatory variables. 
+Therefore, it placates individual heterogeneity through the demeaning method. We express it mathematically:
+\begin{equation}
+    E(c_i \mid X'_{it}) \neq 0
+\end{equation}
+Consider the following model:
+        \begin{equation}
+            y_{it} = a + X^\prime_{it} \beta + c_{i} + e_{it}
+        \end{equation}        
+where we define:  
+        \begin{itemize}
+            \item \( i = 1, \dots, N \), where \( i \) represents a county/city, and we have \( N = 22 \)).
+            \item \( t = 2014, \dots, 2023 \).
+            \item \( y_{it} \) is the dependent variable.
+            \item \( X^\prime_{it} \) are the independent variables of \( K \)-dimension.
+            \item \( a \) is the intercept.
+            \item \( \beta \) is the coefficient vector of \( K \)-dimension.
+            \item \( c_{i} \) is the individual effect.
+            \item \( e_{it} \) is the error term, and \( e_{it} \sim \mathcal{N}(0, \sigma_e^2) \).
+        \end{itemize}
+\subsubsection{Random Effects Model}
+In the random effects model, we assume that the individual effect \( c_{i} \) is a random variable which doesn't relate to the other independent variables \( X^\prime_{it} \), and we can express it mathematically:
+\begin{equation}
+    E(c_i \mid X'_{it}) = 0
+\end{equation}
+Thus the model will become:
+\begin{equation}
+    y_{it} = a + X^\prime_{it} \beta + c_{i} + e_{it}
+\end{equation}
+where we define:  
+        \begin{itemize}
+            \item \( c_{i} \) is the random effect, and \( c_i \sim \mathcal{N}(0, \sigma_c^2) \)
+            \item The others remain the same as the fixed effects model.
+        \end{itemize}
+\subsubsection{Hausman Test}
+To determine the most suitable model, we conduct a Hausman test and construct the null hypothesis.
+\begin{align*}
+    H_0: E(c_i \mid X'_{it}) = 0 \\
+    H_1: E(c_i \mid X'_{it}) \neq 0
+\end{align*} 
+And \( H_{\text{Statistic}} \sim \chi^2(K) \), where \( K \) represents the degree of freedom.
+We test the hypothesis at a 5\% significance level.
+If the test results indicate that the \( p \)-value is less than 0.05, suggesting that individual effects are correlated with the explanatory variables, we will apply the FE model.
+In contrast, if the \( p \)-value does not reveal its significance, we then apply the RE model.
+Despite the fact that we have to conduct this test to select which model we will apply, in most empirical methods, however, we may have the proclivity of choosing the FE model in practice.
+
+\subsection{Non-Linear Approaches}
+In addition to the linear panel data regression models, we also employ machine learning algorithms such as Support Vector Machine (SVM), XGBoost, and Random Forest to capture more complex, non-linear relationships in the data. These models do not make assumptions about the form of the underlying relationship between variables and can handle high-dimensional data effectively. Below is a description of these models and their application to our analysis.
+
+\subsubsection{Support Vector Machine (SVM)}
+Support Vector Machine (SVM) is a supervised machine learning model used for both classification and regression tasks. It works by finding a hyperplane that best separates the data into different classes (in classification) or fits the data (in regression). The objective of SVM is to maximize the margin between the data points and the hyperplane, thereby improving generalization and reducing the risk of overfitting.
+
+In regression tasks, SVM seeks to find a function that deviates from the actual data points by no more than a specified threshold. SVM is particularly useful when the data is not linearly separable in its original space. The mathematical formulation for the hard-margin SVM classification problem is given by:
+
+\begin{equation}
+    \max_{\mathbf{w}} \left\{ \frac{2}{\|\mathbf{w}\|} \right\} 
+    \quad \Longrightarrow \quad 
+    \min_{\mathbf{w}} \frac{1}{2} \mathbf{w}^\top \mathbf{w}
+\end{equation}
+\begin{equation}
+    \text{subject to} \quad y_i(\mathbf{w}^\top \mathbf{x}_i + b) \geq 1, \quad \forall i = 1, \ldots, n
+\end{equation}
+
+\noindent
+Where:
+\begin{itemize}
+    \item \( y_i \) is the true label of the \( i \)-th sample.
+    \item \( \mathbf{x}_i \) represents the input features.
+    \item \( \mathbf{w} \) is the weight vector.
+    \item \( b \) is the bias term.
+\end{itemize}
+
+But that is an optimal case of SVM; sometimes we may not be able to find such a hyperplane that perfectly divides those data. In this scenario of the training dataset, we can tolerate some data lying "under the hyperplane". This method is known as "Soft-Margin SVM". Therefore, we can rewrite the mathematical optimization as:
+
+\begin{equation}
+    \min_{\mathbf{w}, \boldsymbol{\xi}} \frac{1}{2} \mathbf{w}^\top \mathbf{w} + C \sum_{i=1}^{n} \xi_i \\
+    \text{subject to} \quad y_i(\mathbf{w}^\top \mathbf{x}_i + b) \geq 1 - \xi_i, \quad \xi_i \geq 0, \quad \forall i = 1, \ldots, n
+\end{equation}
+
+\noindent
+Where:
+\begin{itemize}
+    \item \( \mathbf{w}^\top \mathbf{w} \): Represents the squared margin, which is minimized to increase the margin width.
+    \item \( \sum_{i=1}^{n} \xi_i \): Represents the total amount of margin violation across all samples.
+    \item \( C \): A regularization parameter that balances margin maximization and classification error.
+    \item \( \xi_i \): Slack variables that allow some flexibility by permitting samples to be within the margin or misclassified.
+\end{itemize}
+
+To solve this optimization problem, we can apply Lagrangian multipliers, take differentiation, and the remaining parts are trivial to tackle. We had better stop diving into the unfathomable mathematical world; also, we can save some space for the following introduction.
+
+\subsubsection{XGBoost (Extreme Gradient Boosting)}
+XGBoost is an efficient and ameliorated implementation of gradient boosted decision trees, widely used in machine learning competitions and real-world applications for both classification and regression tasks. 
+It builds an additive ensemble model, where new decision trees are added sequentially to correct the residual errors made by the previous trees. 
+The predicted output for a given input \( x \) is defined as:
+
+\begin{equation}
+    \hat{y} = \sum_{k=1}^K f_k(x), \quad f_k \in \mathcal{F}
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item \( \hat{y} \) is the final prediction score.
+    \item \( K \) is the total number of trees.
+    \item \( f_k(x) \) is the function (i.e., decision tree) from the function space \( \mathcal{F} \) learned in the \( k \)-th iteration.
+\end{itemize}
+XGBoost optimizes by minimizing the following regularized objective function:
+
+\begin{equation}
+    \mathcal{L}(\phi) = \sum_{i=1}^n l(y_i, \hat{y}_i^{(t)}) + \sum_{k=1}^t \Omega(f_k)
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item \( l(y_i, \hat{y}_i^{(t)}) \) is a differentiable convex loss function that measures the difference between the prediction \( \hat{y}_i^{(t)} \) and our actual label \( y_i \).
+    \item \( \Omega(f_k) = \gamma T + \frac{1}{2} \lambda \| w \|^2 \) is the regularization term, where \( T \) is the number of leaves in the tree and \( w \) represents the leaf weights.
+    \item \( \gamma \) and \( \lambda \) are regularization parameters that control model complexity (L1 and L2 regularization, respectively).
+\end{itemize}
+
+\subsubsection{Random Forest}
+Random Forest is an ensemble learning method; unlike the previous XGBoost, which builds trees in a sequential manner, Random Forest constructs each tree independently and then aggregates their predictions (using averaging for regression or majority voting for classification).
+The mathematical expression for the Random Forest regression model is:
+
+\begin{equation}
+    \hat{y} = \frac{1}{N} \sum_{i=1}^{N} T_i(x)
+\end{equation}
+
+where:
+\begin{itemize}
+    \item \( \hat{y} \) is the predicted output.
+    \item \( N \) is the number of trees in the forest.
+    \item \( T_i(x) \) represents the prediction from the \( i \)-th tree.
+\end{itemize}
+Each tree in the forest is built by randomly selecting a subset of the data and features (bootstrapping) for training, thus ensuring the model remains robust against overfitting and is able to generalize well on unseen data.
+
+In a Random Forest, each decision tree is built by repeatedly splitting the dataset into two at each node. 
+The goal is to select the feature and threshold that produce the purest possible child nodes.
+And purity is typically measured by using either \textbf{Gini Impurity} or \textbf{Entropy}, introduced as follows.
+
+\paragraph{Gini Impurity.}
+The Gini impurity for a node \( t \) is defined as:
+
+\begin{equation}
+    \text{Gini}(t) = 1 - \sum_{k=1}^{K} p_{k}^{2}
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item \( K \): Number of classes.
+    \item \( p_k \): Proportion of samples in node \( t \) that belong to class \( k \).
+\end{itemize}
+
+\paragraph{Entropy.}
+The entropy for a node \( t \) is defined as:
+
+\begin{equation}
+    \text{Entropy}(t) = - \sum_{k=1}^{K} p_k \log_2 p_k
+\end{equation}
+
+\noindent where \( p_k \) is defined as above.
+
+\paragraph{Information Gain.}
+Given a candidate split that partitions the data into left and right child nodes \( t_L \) and \( t_R \), the \textbf{Information Gain} is computed as:
+
+\begin{equation}
+    \text{Gain} = \text{Impurity}(t) - \left( \frac{n_L}{n} \cdot \text{Impurity}(t_L) + \frac{n_R}{n} \cdot \text{Impurity}(t_R) \right)
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item \( \text{Impurity}(t) \) can be either Gini or Entropy.
+    \item \( n \): Number of samples in the parent node.
+    \item \( n_L, n_R \): Number of samples in the left and right child nodes.
+\end{itemize}
+
+The algorithm searches for the split that maximizes our Information Gain, which is tantamount to minimizing the weighted impurity after the split.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/1*_UIUphtL_vXJFeQ6vdKlCA.png}
+    \caption{The difference in both ensemble methods (The left is Bagging, and the right is Boosting)}
+\end{figure}   
+
+\subsubsection{CatBoost (Category Boosting)}
+CatBoost is a gradient boosting algorithm specifically designed to handle categorical features effectively (which still works with continuous variables), reducing the need for extensive preprocessing.
+It introduces an ordered boosting mechanism to mitigate overfitting and employs a symmetric tree structure for balanced splits, enhancing robustness. Because of the similarity of the mathematical structure with XGBoost, the author will leave it as trivial(or as a practice).
+\\
+
+With ordered boosting, CatBoost is particularly suitable for our relatively small datasets with mixed feature types; additionally, it performs well in tabular data tasks compared to XGBoost and LightGBM, which will be mentioned afterward.
+
+\subsubsection{LightGBM}
+LightGBM is a highly efficient gradient boosting framework, offering superior speed and memory usage compared to traditional implementations like XGBoost. 
+It employs a histogram-based algorithm to bucket continuous feature values into discrete bins, reducing memory consumption and accelerating training. 
+Paramountly, LightGBM uses a leaf-wise tree growth strategy, which prioritizes splitting the leaf with the maximum loss reduction, enabling faster convergence but requiring careful regularization to prevent overfitting. I'll provide some illustrations below.
+The mathematical intuition resembles XGBoost as mentioned above, thus I leave some space for further, more intriguing analysis.\\
+
+Worth mentioning is that, in this study, due to our inherently limited dataset, which may engender the issue of overfitting. To tackle this potential problematic occurrence, I'll introduce 10-fold cross-validation in all of my nonlinear methods.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/VBVvOdC.png}
+    \caption{The difference in both Boosting methods (Photo credited by ithelp.ithome.com.tw)}
+\end{figure}   
+\subsubsection{Model Evaluation and Comparison}
+For the SVM, XGBoost, Random Forest, CatBoost, and LightGBM models, we evaluate the model performance using various metrics, such as the mean squared error (MSE), R-squared (\( R^2 \)), and so on, to evaluate their predictive capabilities.
+
+We also perform classical 10-fold cross-validation to ensure the robustness of the results and avoid overfitting. 
+Hyperparameter tuning (e.g., number of nodes in each tree, learning rate) is performed to optimize the performance of each model. The results from these models are then compared to those obtained from the panel data regression models to assess the improvements in prediction accuracy and model performance.
+
+\subsubsection{SHAP (SHapley Additive exPlanations) for Model Interpretation}
+
+With a view to interpret the above-mentioned nonlinear machine learning models beyond mere predictive performance, we will employ SHAP (SHapley Additive exPlanations), a theoretic approach based on cooperative game theory. 
+SHAP assigns each feature an importance value for a particular prediction by computing its marginal contribution, averaged over all possible feature coalitions. Unlike those traditional feature importance metrics (such as gain or split count), SHAP values rendre both the magnitude and direction of a feature’s influence on the model output.
+And this approach offers several advantages: 
+\begin{enumerate}
+    \item Allow individual-level interpretation (i.e., how each feature affects in a particular city/year sample)
+    \item Support global feature importance ranking based on aggregated effects
+    \item Reveal nonlinear patterns or threshold effects in complex models. In this study, SHAP (TreeExplainer)values are calculated for all ensemble models (Random Forest, LightGBM, CatBoost, and XGBoost)
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/9f5beaf45b0985fee227a753f350776a.png}
+    \caption{How SHAP value works in model interpretation(https://github.com/shap/shap)}
+    \label{fig:correlation-heatmap}
+\end{figure} 
+
+
+\newpage
+\section{Results}
+
+
+        
+\subsection{Correlation Heat Map}
+First of all—we take a glimpse of the correlation matrix and heat map of independent variables, which is illustrated as follows:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{/Users/yuzetsai/Desktop/output.png}
+    \caption{Correlation Heat Map of Independent Variables}
+    \label{fig:correlation-heatmap}
+\end{figure} 
+
+
+
+\newpage
+\subsection{Panel data Regression}
+\begin{table}[H]
+    \caption{Model Comparison of Household Income}
+    \begin{tabular}{lcc}
+    \toprule
+     & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+    \midrule
+    \textbf{Dep. Variable} & Household\_income & Household\_income \\
+    \textbf{R-squared} & 0.5755 & 0.5269 \\
+    \textbf{R-Squared (Within)} & 0.5755 & 0.5754 \\
+    \textbf{R-Squared (Between)} & -7.664e-05 & 0.0008 \\
+    \textbf{R-Squared (Overall)} & 0.0132 & 0.0141 \\
+    \textbf{F-statistic} & 16.718 & 15.717 \\
+    \textbf{P-value (F-stat)} & 0.0000 & 0.0000 \\
+    \midrule
+    \textbf{General\_waste\_recycling\_rate} & 1.656e+04 (0.3543) & 1.565e+04 (0.3247) \\
+    \textbf{Budget\_structure\_ratio\_for\_environmental} & -2.424e+04 (-1.5064) & -2.416e+04 (-1.4588) \\
+    \textbf{Proportion\_of\_environmental\_fines} & -1656.4 (-0.3080) & -1520.4 (-0.2741) \\
+    \textbf{per\_capita\_incinerated\_waste\_kg} & -1.459e+04 (-1.0786) & -1.509e+04 (-1.0815) \\
+    \textbf{per\_capita\_landfilled\_waste\_kg} & -8152.9 (-0.7027) & -8504.2 (-0.7109) \\
+    \textbf{per\_capita\_generation\_of\_general\_waste\_kg} & 9.208e+04 (0.9104) & 9.113e+04 (0.8736) \\
+    \textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 2.426e+04 (2.6360)$^{***}$ & 2.446e+04 (2.5775)$^{***}$ \\
+    \textbf{per\_capita\_food\_waste\_kg} & -6.258e+04 (-1.0021) & -6.412e+04 (-0.9958) \\
+    \textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & -1.877e+04 (-0.1813) & -1.786e+04 (-0.1673) \\
+    \midrule
+    \textbf{Effects} & Entity & \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+Then we concentrated on scrutinising our first regression table, in which the Dependent variable is Household Income.
+In this model, we compared both Fixed Effects (FE) and Random Effects (RE) estimators. Albeit the results of Hausman test isn't reject the hypothesis of individual effect having no correlation
+with the other independent variables, given the panel structure of the data and our primary focus on within-unit variation (i.e., how changes in circular economic variables affect household income over time within each region), the Fixed Effects model is our preferred specification, and thus the following part we are going to focus on only the FE model.
+The within R-squared for the FE model is 0.5755, indicating that approximately 57.6\% of the variation in household income within regions over time can be explained by the included predictors. 
+Among the variables, only the per capita installed capacity of renewable energy being statistically significant and positive correlation of household income, suggesting a potential linkage between regional investments in green energy and improved household economic well-being, and thus serves as a moderated evidence to support the establishing of 4-th hypothesis.
+Here, we illustrated the feature importance
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/HI-panle.png}
+    \caption{The Impact Variables on Household Income: Fixed Effect Model}
+\end{figure} 
+
+\begin{table}[H]
+\centering
+\caption{Model Comparison of Per Capita Electricity Usage}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+\midrule
+\textbf{Dep. Variable} & p-c\_electricity\_usage & p-c\_electricity\_usage \\
+\textbf{R-squared} & 0.0538 & 0.0430 \\
+\textbf{R-Squared (Within)} & 0.0538 & 0.0527 \\
+\textbf{R-Squared (Between)} & -0.0322 & -0.0167 \\
+\textbf{R-Squared (Overall)} & -0.0776 & -0.0570 \\
+\textbf{F-statistic} & 0.7588 & 0.6891 \\
+\textbf{P-value (F-stat)} & 0.6545 & 0.7178 \\
+\midrule
+\textbf{General\_waste\_recycling\_rate} & -1748.9 (-1.0245) & -1630.1 (-0.9591) \\
+\textbf{Budget\_structure\_ratio\_for\_environmental} & 1469.0 (1.5002) & 1385.3 (1.4779) \\
+\textbf{Proportion\_of\_environmental\_fines} & -56.664 (-0.1633) & -9.4697 (-0.0272) \\
+\textbf{per\_capita\_incinerated\_waste\_kg} & -446.12 (-0.5155) & -573.76 (-0.6610) \\
+\textbf{per\_capita\_landfilled\_waste\_kg} & -246.51 (-0.3294) & -371.66 (-0.4985) \\
+\textbf{per\_capita\_generation\_of\_general\_waste\_kg} & -3261.6 (-0.7386) & -2803.4 (-0.6335) \\
+\textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 374.06 (0.6450) & 415.61 (0.7202) \\
+\textbf{per\_capita\_food\_waste\_kg} & 5519.8 (1.7388)$^{*}$ & 4844.5 (1.5677) \\
+\textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & 4079.9 (0.9360) & 3577.6 (0.8217) \\
+\midrule
+\textbf{Effects} & Entity & \\
+\bottomrule
+\end{tabular}
+\end{table}
+Secondly, let us focus on our regressing results with the per capita of electricity usage as our dependent variable. 
+In this model, the within R-squared for the FE model is 0.0538, saying that less than 6 \% of the variation in dependent variable within regions over time can be explained by the included predictors, 
+which has the large difference with our day-dreaming estimation results. Despite being not that comfortable, we still can be inferred from this regression table.
+Among the variables, only the per capita food waste stands out statistically significant and positive correlation of dependent variable under the 90\% of confidence interval, suggesting a potential linkage between wasting food and also energy, and thus 3-th may be proved; worth-noting is that, 
+the more the per capita of capacity of renewable energy, the more the per capita usage of electricity, which is contradict to our 4-th hypothesis on electricity efficiency, indicaing that the consciousness of saving electricity may not go with the increment of usage in renewable energy.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/elec-panel.png}
+    \caption{The Impact Variables on Per Capita Electricity Usage: Fixed Effect Model}
+\end{figure} 
+
+\begin{table}[H]
+        \centering
+        \caption{Model Comparison of Vacancy rate}
+        \begin{tabular}{lcc}
+        \toprule
+         & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+        \midrule
+        \textbf{Dep. Variable} & Vacancy\_rate & Vacancy\_rate \\
+        \textbf{R-squared} & 0.3796 & 0.3371 \\
+        \textbf{R-Squared (Within)} & 0.3796 & 0.3795 \\
+        \textbf{R-Squared (Between)} & 0.0117 & 0.0125 \\
+        \textbf{R-Squared (Overall)} & -0.0008 & 0.0002 \\
+        \textbf{F-statistic} & 8.1573 & 7.7976 \\
+        \textbf{P-value (F-stat)} & 0.0000 & 0.0000 \\
+        \midrule
+        \textbf{General\_waste\_recycling\_rate} & 1.1738 (4.8452)$^{***}$ & 1.1819 (4.7618)$^{***}$ \\
+        \textbf{Budget\_structure\_ratio\_for\_environmental} & 0.1066 (0.7670) & 0.1001 (0.7037) \\
+        \textbf{Proportion\_of\_environmental\_fines} & 0.0098 (0.1999) & 0.0108 (0.2138) \\
+        \textbf{per\_capita\_incinerated\_waste\_kg} & -0.1464 (-1.1922) & -0.1513 (-1.2023) \\
+        \textbf{per\_capita\_landfilled\_waste\_kg} & -0.3178 (-2.9923)$^{***}$ & -0.3194 (-2.9346)$^{***}$ \\
+        \textbf{per\_capita\_generation\_of\_general\_waste\_kg} & 2.6392 (4.2111)$^{***}$ & 2.6646 (4.1490)$^{***}$ \\
+        \textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 0.1055 (1.2815) & 0.1081 (1.2824) \\
+        \textbf{per\_capita\_food\_waste\_kg} & -0.7543 (-1.6744)$^{*}$ & -0.7786 (-1.6881)$^{*}$ \\
+        \textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & -2.7926 (-4.5143)$^{***}$ & -2.8214 (-4.4511)$^{***}$ \\
+        \midrule
+        \textbf{Effects} & Entity & \\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+
+Last but not the least, we examined the regression results where the dependent variable is Vacancy Rate, potentially reflecting urban usage intensity or housing inefficiency, and the economic situation within a city/county.
+The within R-squared of the FE model is 0.3796, implying that about 38\% of the within-region variation over time in vacancy rates is explained by those predictors. 
+In this model, however, several predictors showed significant associations, comepared to the previous two. 
+Notably:
+General waste recycling rate is positively associated with vacancy rates 
+which could suggest that areas with more recycling activity also experience higher vacancy, potentially due to population or consumption patterns.
+Per capita landfilled waste and resource recovery by local authorities are both negatively associated with vacancy rates, with strong statistical significance, possibly indicating that better waste management is linked to more efficient space usage.
+These findings suggest that certain circular economic metrics, particularly waste management indicators, are meaningfully related to urban vacancy dynamics.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/Vc-panel.png}
+    \caption{The Impact Variables on Per Capita Electricity Usage: Fixed Effect Model}
+\end{figure} 
+
+\subsection{Nonlinear Approach Cross-Comparison}
+\subsubsection{Results for Household Income}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/RF_HI.png}
+        \caption{Random Forest}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/LIghtgbm_HI.png}
+        \caption{LightGBM}
+    \end{subfigure}
+
+    \vspace{0.5cm} % 加一些垂直空白
+
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/Cat_HI.png}
+        \caption{CatBoost}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/Xgboost_HI.png}
+        \caption{XGBoost}
+    \end{subfigure}
+
+    \caption{SHAP Value Comparison of Ensemble Methods}
+    \label{fig:ensemble_comparison}
+\end{figure} 
+
+\begin{table}[H]
+    \centering
+    \caption{SHAP Average Value Summary}
+    \label{tab:shap_summary_avg}
+    \begin{tabular}{lrrrr}
+    \hline
+    Feature & shap\_avg\_xgb & shap\_avg\_rf & shap\_avg\_cat & shap\_avg\_lgbm \\
+    \hline
+    Budget\_structure\_ratio\_for\_environmental & 135392 & 184066 & 103778 & 140778 \\
+    General\_waste\_recycling\_rate & 43613 & 56781 & 44104 & 106733 \\
+    per\_capita\_generation\_of\_general\_waste\_kg & 30847 & 11152 & 29307 & 1692 \\
+    per\_capita\_resource\_recovery\_by\_local\_authorities & 27689 & 30928 & 34221 & 43616 \\
+    per\_capita\_landfilled\_waste\_kg & 16090 & 30967 & 4279 & 11109 \\
+    Proportion\_of\_environmental\_fines & 8109 & 4410 & -24839 & -2747 \\
+    per\_capita\_incinerated\_waste\_kg & 298 & -10202 & -11706 & -3360 \\
+    per\_capita\_t\_capacity\_of\_renewable\_energy & -20539 & -16840 & -22892 & -28026 \\
+    per\_capita\_food\_waste\_kg & -76820 & -72989 & -63354 & -84387 \\
+    \hline
+    \end{tabular}
+\end{table}
+ 
+
+To better understand the contribution of miscellaneous circular economic indicators to prediction out first target variable, we calculated SHAP values across four nonlinear models, worth metioned is that, for the reasons why we only include four model instead of five?
+Frankly speaking, which conducted with those following data modelisation, some unexpected outcomes arosed -- R-squared value of SVM model was negative, which could be implied as using SVM as our model has terrible compatability and peccable performance of the variables interpretation, thus based on the reason, the author decided to relinquish the following illustrations on SVM model, and concentrate only on those four models.
+
+Let us back to the interpretation session, overall, the Budget structure ratio for environmental proved to be the most significant and stable feature across all models, with an average SHAP value exceeding 100,000(NTD) and consistently contributing positively. This indicates that a higher proportion of the budget allocated to environmental concerns tends to lead to higher predicted values.
+Other features, such as General waste recycling rate and per capita generation of general waste, also showed stable and positive contributions, but the value in LightGBM model deviates from others much. 
+This suggests that societal or economic structures related to high recycling rates and per capita waste generation may indirectly influence the prediction target, implying that the third assumption we made is proved.
+
+Intriguely to mentioned is that, per capita food waste and per capita of total capacity of renewable energy consistently had negative SHAP values across all models. 
+This suggests a negative relationship with the prediction targets, contradicting to our 4-th hypothesis. 
+The results indicating that higher food waste or inefficient renewable energy infrastructure may harm our income, the reason behind this may attribute to the richer the people, the higher the level of their concerns on food waste, as for the other, however, is worth dicussing in our further analysis.
+
+Additionally, variables such as "Per capita incinerated waste (kg)" exhibited consistently negative SHAP values, Per capita landfilled waste (kg) is in converse, however. 
+This implies an outcome that runs partially contrary to our second hypothesis.
+
+Lastly, there was considerable variation in the contribution assessment for some features, such as Proportion of environmental fines. While CatBoost showed a strong negative contribution, Random Forest and XGBoost illustrated positive contributions. This suggests that there may be complex nonlinear interactions between these features and the target variable, which may be considered in our further investigation.
+
+   
+
+    
+\subsubsection{Results for Per Capita Electricity Usage}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_rf.png}
+        \caption{Random Forest}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Light.png}
+        \caption{LightGBM}
+    \end{subfigure}
+
+    \vspace{0.5cm} % 加一些垂直空白
+
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Cat.png}
+        \caption{CatBoost}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Xgboost.png}
+        \caption{XGBoost}
+    \end{subfigure}
+
+        \caption{SHAP Value Comparison of Ensemble Methods}
+    \label{fig:ensemble_comparison}
+\end{figure}
+\begin{table}[H]
+    \centering
+    \caption{SHAP Average Value Summary}
+    \label{tab:shap_summary}
+    \begin{tabular}{lrrrr}
+    \hline
+    Feature & shap\_avg\_xgb & shap\_avg\_rf & shap\_avg\_cat & shap\_avg\_lgbm \\
+    \hline
+    Budget\_structure\_ratio\_for\_environmental & 5818 & 3 & 872 & 2683 \\
+    per\_capita\_food\_waste\_kg & 5680 & 0 & 292 & 307 \\
+    General\_waste\_recycling\_rate & 903 & 0 & 880 & 1825 \\
+    Proportion\_of\_environmental\_fines & 552 & -1 & 902 & 2782 \\
+    per\_capita\_resource\_recovery\_by\_local\_authorities & 443 & 0 & 196 & -387 \\
+    per\_capita\_t\_capacity\_of\_renewable\_energy & 417 & 8 & -95 & -108 \\
+    per\_capita\_landfilled\_waste\_kg & 247 & -6 & -509 & 223 \\
+    per\_capita\_generation\_of\_general\_waste\_kg & 190 & 0 & -173 & 400 \\
+    per\_capita\_incinerated\_waste\_kg & -283 & 0 & -1143 & -195 \\
+    \hline
+    \end{tabular}
+    \end{table}
+    
+Let's going further, to investigate the contribution of various circular economy-related indicators to the prediction of the second variable, there we also computed SHAP (SHapley Additive exPlanations) values across four nonlinear models—namely, XGBoost, Random Forest, CatBoost, and LightGBM. 
+
+Diving into the results, "Budget structure ratio for environmental" emerged as one of the first impactful feature across all models, with SHAP values of particularly high magnitude—especially in XGBoost and LightGBM. 
+This suggests that cities or regions allocating a higher proportion of their budget to environmental policies are more likely to achieve favorable outcomes in the prediction target, reinforcing our first assumption about policy investment indeed playing a key role.
+Other features like the "General waste recycling rate" and "Per capita generation of general waste" also demonstrated positive contributions across most models, thus serve as a concrete evidence our third assumption on electricity efficiency. Interestingly, in LightGBM, the SHAP value for recycling rate was significantly higher than in other models, hinting at model-specific sensitivity or possibly nonlinear interactions with other variables.
+
+
+On contrary, per capita of total capacity of renewable energy had negative SHAP values in the last two models, which fited our expectations, but positive in XGBoost and Random Forest model(even the most significantly positive one). 
+This results, Hardly can we interpret the validity of our 4-th hypothesis. 
+
+One possible interpretation for positive value is that, for renewable energy capacity warrants more electricity, it could reflect the misconception on overutilization or misallocation of the energy, thus causing additional waste on electricity.
+Interestingly, mostly all features show significant variation compared to Random Forest model.  
+For example, the recycling rate has minimal impact in Random Forest but is much more influential in LightGBM (1825). 
+This discrepancy suggests that tree-based ensemble models capture feature interactions differently, and model choice can materially affect interpretability outcomes.
+
+
+\subsubsection{Nonlinear Approach Cross-Comparison-- Results for Vacancy rate}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_rf.png}
+        \caption{Random Forest}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_light.png}
+        \caption{LightGBM}
+    \end{subfigure}
+
+    \vspace{0.5cm} % 加一些垂直空白
+
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_cat.png}
+        \caption{CatBoost}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[width=\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_Xgboost.png}
+        \caption{XGBoost}
+    \end{subfigure}
+
+        \caption{SHAP Value Comparison of Ensemble Methods}
+    \label{fig:ensemble_comparison}
+\end{figure} 
+
+
+\begin{table}[H]
+    \centering
+    \caption{SHAP Average Value Summary}
+    \label{tab:shap_summary}
+    \begin{tabular}{lrrrr}
+    \hline
+    Feature & shap\_avg\_xgb & shap\_avg\_rf & shap\_avg\_cat & shap\_avg\_lgbm \\
+    \hline
+    per\_capita\_food\_waste\_kg & 1.146 & 0.000 & 0.786 & 0.334 \\
+    Proportion\_of\_environmental\_fines & 0.273 & 0.000 & -0.201 & -0.229 \\
+    per\_capita\_incinerated\_waste\_kg & 0.093 & 0.000 & 0.268 & -0.320 \\
+    per\_capita\_t\_capacity\_of\_renewable\_energy & 0.009 & -0.000 & -0.095 & -0.087 \\
+    per\_capita\_landfilled\_waste\_kg & -0.032 & 0.004 & -0.109 & 0.051 \\
+    per\_capita\_resource\_recovery\_by\_local\_authorities & -0.113 & 0.000 & -0.149 & -0.457 \\
+    per\_capita\_generation\_of\_general\_waste\_kg & -0.127 & 0.000 & -0.197 & 0.003 \\
+    General\_waste\_recycling\_rate & -0.226 & 0.000 & 0.164 & -0.166 \\
+    Budget\_structure\_ratio\_for\_environmental & -1.418 & 0.017 & -0.547 & -1.327 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+Then about the last target variable, among all features, Per Capita Food Waste (kg) stands out with consistently high SHAP values, especially in XGBoost (1.146) and CatBoost (0.786), indicating that food waste per person is a strong and stable predictor across models. 
+This does not align with our third assumption on Vancancy rate should demonstrate negative correlation with food waste.
+
+In contrast, Budget Structure Ratio for Environmental—which was previously dominant in raw SHAP value terms—now shows strong negative SHAP values in most models (e.g., -1.418 in XGBoost and -1.327 in LightGBM). 
+This suggests that a higher share of budget allocated to environmental purposes might be associated with lower predictions of the target variable, perhaps reflecting higher spending in environment serve as an external benefit of economic performance(people are more willing to move into the city which care more about the environment).
+
+Several features show more model-specific behavior. For instance, General Waste Recycling Rate has a slightly positive impact in CatBoost (0.164) but negative in both XGBoost and LightGBM, partially correspond to our third assumption. 
+
+Finally, it is notable that Random Forest contributes almost no variation in SHAP values across features—most are effectively zero. This could reflect lower model sensitivity to individual predictors or possible over-smoothing due to tree averaging.
+
+\section{Discussion and Implication}
+\subsection{Model Comparison}
+\begin{table}[htbp]
+    \centering
+    \caption{Summary R-squared Value Across Different Models}
+    \label{tab:r2_pivot_wider}
+    \begin{tabular}{lrrrrr}
+    \hline
+    Feature & XGBoost & Random Forest & LightGBM & CatBoost & FE Panel Regression\\
+    \hline
+    Household Income & 0.720 & 0.688 & 0.699 & 0.752 & 0.578\\
+    Per Capita Electricity Usage & 0.427 & 0.479 & 0.474 & 0.420 & 0.054\\
+    Vacancy rate & 0.736 & 0.659 & 0.600 & 0.743 & 0.380\\
+    \hline
+    \end{tabular}
+    \end{table}
+Moving forward to the cross comparison, showing as above, 
+Table 7 presents a comparative analysis of R-squared values across five different modeling approaches for three dependent indicators. 
+Here, the author rendre some pivitol observations, which include:
+
+\begin{itemize}
+    \item \textbf{Household Income Prediction:}
+    \begin{itemize}
+        \item CatBoost demonstrates superior performance (R²=0.752), followed closely by XGBoost (0.720)
+        \item The 23.1\% improvement of CatBoost over FE Panel Regression (0.578) highlights the advantage of gradient boosting methods for income-related predictions
+    \end{itemize}
+    
+    \item \textbf{Per Capita Electricity Usage:}
+    \begin{itemize}
+        \item All models show relatively weak predictive power (R²$<$ 0.5), suggesting inherent complexity in electricity consumption patterns
+        \item Random Forest achieves the highest performance (0.479), other non-linear methods follows its predicability, in general they are above 0.42, while FE Panel Regression fails to capture meaningful variance (R²=0.054)
+    \end{itemize}
+    
+    \item \textbf{Vacancy Rate Estimation:}
+    \begin{itemize}
+        \item CatBoost again leads (0.743), with XGBoost showing comparable performance (0.736)
+        \item The significant gap between machine learning models and FE Panel Regression (0.380) suggests traditional methods may oversimplify vacancy dynamics
+    \end{itemize}
+\end{itemize}
+
+\subsection{Key Findings}
+Here, we draw several conclusions based on the observations and results from the report.
+\begin{itemize}
+\item{\textbf{Algorithm Performance:}}
+    \begin{enumerate}
+    \item Boosting algorithms, particularly \textbf{CatBoost and Xgboost}, consistently outperform other modeling approaches in terms of predictive accuracy and robustness. This performance edge is evident across various dependent variables and tasks, highlighting the algorithm’s capacity to handle structured tabular data with complex interactions.
+    \end{enumerate}
+
+\item {\textbf{Prediction Difficulty:}}
+    \begin{enumerate}
+    \item Among the three outcome variables, \textbf{per capita electricity usage} emerges as the most challenging to predict. This may reflect higher variability, unobserved behavioural factors, or external influences such as climate and infrastructure not fully captured by the model.
+    \item By contrast, \textbf{household income and vacancy rate} show relatively higher predictability, suggesting that socioeconomic indicators are more responsive to the selected explanatory variables. This implies that household and urban characteristics tend to be more systematically influenced by policy-related and environmental variables than energy usage patterns.
+    \end{enumerate}
+
+\item{\textbf{Methodological Implications:}}
+    \begin{enumerate}
+    \item The results reinforce the substantial \textbf{advantages of machine learning methods} for modeling complex socioeconomic outcomes. These approaches effectively capture nonlinear relationships and high-dimensional interactions that traditional econometric models may miss.
+    \item However, there remains a \textbf{trade-off between interpretability and predictive power}. While fixed effects panel regression provides clear causal inference and policy-relevant coefficients, its limited flexibility may reduce predictive accuracy. Thus, the selection of method should align with the research objective—whether the goal is to explain (interpret) or to predict.
+    \end{enumerate}
+
+\end{itemize}
+
+\begin{table}[H]
+\caption{Variable Significance Across Different Models: Household Income}
+\label{tab:model_comparison}
+\tiny
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variable} & \textbf{XGBoost} & \textbf{Random Forest} & \textbf{CatBoost} & \textbf{LightGBM} & \textbf{Linear (FE)} \\
+\midrule
+Budget structure ratio for environmental & positive (+) & positive (+) & positive (+) & positive (+) & not significant \\
+General waste recycling rate & not significant & positive (+) & positive (+) & positive (+) & not significant \\
+Per capita generation of general waste (kg) & not significant & not significant & not significant & not significant & not significant \\
+Per capita resource recovery by local authorities & not significant & not significant & not significant & not significant & not significant \\
+Per capita landfilled waste (kg) & not significant & not significant & not significant & not significant & not significant \\
+Proportion of environmental fines & not significant & not significant & negative (-) & not significant & not significant \\
+Per capita incinerated waste (kg) & not significant & not significant & not significant & not significant & not significant \\
+Per capita capacity of renewable energy & not significant & not significant & not significant & not significant & positive (+) \\
+Per capita food waste (kg) & negative (-) & negative (-) & negative (-) & negative (-) & not significant \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\tiny
+\caption{Variable Importance and Direction of Impact across Methods: Per Capita of Electricity Usage}
+\label{tab:var_impact_summary}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variable} & \textbf{XGBoost} & \textbf{Random Forest} & \textbf{CatBoost} & \textbf{LightGBM} & \textbf{Linear (FE)} \\
+\midrule
+Budget structure ratio for environmental & Positive (+) & Positive (+) & Positive (+) & Positive (+) & Not significant \\
+Per capita food waste (kg) & Positive (+) & Not significant & Not significant & Not significant & Positive (+) \\
+General waste recycling rate & Not significant & Not significant & Positive (+) & Positive (+) & Not significant \\
+Proportion of environmental fines & Not significant & Not significant & Positive (+) & Positive (+) & Not significant \\
+Per capita resource recovery by local authorities & Not significant & Not significant & Not significant & Not significant & Not significant \\
+Per capita t capacity of renewable energy & Not significant & Positive (+) & Not significant & Not significant & Not significant \\
+Per capita landfilled waste (kg) & Not significant & Negative (-) & Not significant & Not significant & Not significant \\
+Per capita generation of general waste (kg) & Not significant & Not significant & Not significant & Not significant & Not significant \\
+Per capita incinerated waste (kg) & Not significant & Not significant & Negative (-) & Not significant & Not significant \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\tiny
+\caption{Variable Importance and Direction of Impact across Methods: Vacancy Rate}
+\label{tab:var_impact_summary_2}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variable} & \textbf{XGBoost} & \textbf{Random Forest} & \textbf{CatBoost} & \textbf{LightGBM} & \textbf{Linear (FE)} \\
+\midrule
+Per capita food waste (kg) & Positive (+) & Not significant & Positive (+) & Not significant & Negative (-) \\
+Proportion of environmental fines & Not significant & Not significant & Not significant & Not significant & Not significant \\
+Per capita incinerated waste (kg) & Not significant & Not significant & Not significant & Not significant & Not significant \\
+Per capita t capacity of renewable energy & Not significant & Not significant & Not significant & Not significant & Negative (-) \\
+Per capita landfilled waste (kg) & Not significant & Positive (+) & Not significant & Not significant & Not significant \\
+Per capita resource recovery by local authorities & Not significant & Not significant & Not significant & Negative (-) & Negative (-) \\
+Per capita generation of general waste (kg) & Not significant & Not significant & Not significant & Not significant & Positive (+) \\
+General waste recycling rate & Not significant & Not significant & Not significant & Not significant & Positive (+) \\
+Budget structure ratio for environmental & Negative (-) & Positive (+) & Negative (-) & Negative (-) & Not significant \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Variable} & \textbf{Household Income} & \textbf{Pc Electricity Usage} & \textbf{Vacancy Rate} \\
+\midrule
+Budget structure ratio for environmental & +4 & +4 & -2 \\
+General waste recycling rate             & +3 & +2 & +1 \\
+Per capita generation of general waste (kg) & 0 & 0 & +1 \\
+Per capita resource recovery by local authorities & 0 & 0 & -2 \\
+Per capita landfilled waste (kg)         & 0 & -1 & 0 \\
+Proportion of environmental fines        & -1 & +2 & 0 \\
+Per capita incinerated waste (kg)        & 0 & -1 & 0 \\
+Per capita capacity of renewable energy  & +1 & +1 & -1 \\
+Per capita food waste (kg)               & -4 & +2 & +1 \\
+\bottomrule
+\end{tabular}
+\caption{Summary of Variable Scores across Models }
+\end{table}
+
+At the final stage of our analysis, we evaluate the relative significance of each explanatory variable across the three dependent indicators using five different modeling approaches.
+To determine the significance of a variable in the nonlinear models, we compute the average absolute SHAP value for all variables within each model. 
+A variable is deemed as significant if its SHAP value exceeds the average, with the direction of impact indicated by the sign of the SHAP value—positive or negative, as shown from Table 8 to Table 10.
+For the linear fixed-effects panel regression, significance is simply determined based on the presence of statistical significance markers (e.g., asterisks) in the regression output.
+To quantify the overall importance of each variable, we assign a score based on its significance in each method: +1 for significant positive impact, -1 for significant negative impact, and 0 if not significant. These scores are then aggregated across the five models for each of the three indicators.
+The summarized results are illuminated in Table 11.
+\\
+\subsection{Summary of Explanatory Variables' Effects}
+
+\noindent As in Table 11, we conclude with interpretation of each explanatory variables, and worth methioning is that, larger positive values indicate a stronger positive relationship (e.g., more electricity usage), while larger negative values indicate a stronger negative effect. Note that a higher \textbf{Vacancy Rate} is interpreted as a \textit{negative economic outcome} (i.e., more vacant homes imply weaker urban development).
+
+\begin{itemize}
+    \item \textbf{Budget structure ratio for environmental:} Strong positive effect on household income and electricity usage, suggesting cities with higher environmental budget shares tend to have higher income levels and energy use. It has a moderate negative effect on vacancy rate, implying improved economic activity and lower vacancy.
+    
+    \item \textbf{General waste recycling rate:} Positively affects all three indicators, especially for household income. This suggests that a high recycling rate is associated with better environmental management and may contribute to economic vitality, but on the contrary, it slightly pull up the electricity usage.
+    
+    \item \textbf{Per capita generation of general waste:} In general, this explanatory variable has no significant effect on income or electricity usage, with a slightly positive association with vacancy rate—possibly reflecting inefficient consumption patterns in areas with more vacant properties.
+    
+    \item \textbf{Per capita resource recovery by local authorities:} Shows a moderate negative effect on vacancy rate, indicating that better local recycling systems help reduce their house vacancy rate. However, there is no significant impact on income or electricity usage.
+    
+    \item \textbf{Per capita landfilled waste:} Slight negative effect on electricity usage, possibly suggesting that areas relying more on landfilling have lower energy demand, but in general it is not a critical explanatory variable, implying the priority of policies making is lower than the others. 
+    
+    \item \textbf{Proportion of environmental fines:} Has a moderate positive effect on electricity usage, possibly due to more industrial or urban activities. However, it shows a negative effect on income, which may reflect poorer governance or environmental issues.
+    
+    \item \textbf{Per capita incinerated waste:} Slightly reduces electricity usage. No notable effects on other indicators. Tantamount to \textbf{Per capita landfilled waste}, it may not be the prior concerns when it comes to policies decision making.
+    
+    \item \textbf{Per capita capacity of renewable energy:} Slightly increases household income and electricity usage, while reducing vacancy rate. This suggests that renewable energy capacity is linked to more vibrant, economically stable cities. However, it deficiency of significance is not enough to support our \textbf{Assumption 4}.
+    
+    \item \textbf{Per capita food waste:} Strong negative effect on household income—potentially associated with income inequality or lower-income groups. However, it increases electricity usage and slightly increases vacancy, indicating resource inefficiency in consumption. Additionally, it serves as a strong evidence of proving the contradiction of \textbf{Assumption 3}, providing us an innovative respective. 
+\end{itemize}
+
+\subsection{Evaluations of The Assumptions}
+
+\textit{Note: A higher value of per capita electricity usage indicates more energy consumption (i.e., lower energy efficiency), and a higher vacancy rate reflects more unoccupied housing, which is generally interpreted as a sign of weaker economic conditions. Therefore, a \textbf{negative effect} on electricity usage or vacancy rate implies a \textbf{positive economic or environmental outcome}.}
+
+Based on the empirical results from both linear (Fixed Effects) and nonlinear machine learning models (XGBoost, LightGBM, CatBoost, Random Forest), the following evaluations of our initial hypotheses are presented:
+
+\begin{itemize}
+    \item \textbf{Hypothesis 1:} Environmental budgets, regulations, and recycling efforts have a positive relationship with electricity efficiency(i.e. negative on per capita electricity usage).\\
+    \textcolor{red}{\textit{Status: Inversely supported}} \\
+    Environmental budget ratios exhibit a consistently positive effect on electricity usage (General waste recycling rate exhibit less but positive), which actually implies \textbf{higher} energy consumption (i.e., \textbf{lower} energy efficiency), not necessarily the intended policy outcome. Therefore, while a relationship exists, the direction is opposite to efficiency expectations.
+
+    \item \textbf{Hypothesis 2:} Higher levels of landfill usage and incineration, combined with poor recycling practices, are negatively associated with household income.\\
+    \textcolor{brown}{\textit{Status: Partially supported}} \\
+    The signs of coefficients for landfill and incineration are mostly negative (as expected), but lack statistical significance in linear models. Some support is observed in linear regression outcomes and SHAP-based nonlinear results.
+
+    \item \textbf{Hypothesis 3:} Per capita food waste and the generation of general waste are positively correlated with household income and electricity usage (i.e. less electricity efficiency), and negatively correlated with vacancy rate.\\
+    \textcolor{brown}{\textit{Status: Partially supported}} \\
+    Food waste is negatively associated with household income and positively associated with electricity usage (less electricity efficiency) and vacancy rate—suggesting inefficiency and weaker economic outcomes. These patterns contradict the initial assumption.
+
+    \item \textbf{Hypothesis 4:} Per capita capacity of renewable energy is positively correlated with household income and electricity efficiency (i.e., negatively with electricity usage).\\
+    \textcolor{brown}{\textit{Status: Partially supported}} \\
+    A significant and positive effect on income is observed in linear models. However, the relationship with electricity usage is inconsistent and often positive—indicating more, not less, energy consumption. The efficiency benefit remains unverified.
+\end{itemize}
+
+\begin{table}[h!]
+\centering
+\caption{Summary of Hypotheses Evaluation}
+\begin{tabular}{|c|p{7cm}|c|}
+\hline
+\textbf{Hypothesis} & \textbf{Statement} & \textbf{Conclusion} \\
+\hline
+1 & Environmental budgets and recycling improve electricity efficiency & \textcolor{red}{\textbf{Inversely supported}} \\
+\hline
+2 & Landfill/incineration harm income, poor recycling lowers income & \textcolor{brown}{\textbf{Partially supported}} \\
+\hline
+3 & Waste positively linked to income and electricity usage, negatively to vacancy & \textcolor{brown}{\textbf{Partially supported}} \\
+\hline
+4 & Renewable energy capacity improves income and electricity efficiency & \textcolor{brown}{\textbf{Partially supported}} \\
+\hline
+\end{tabular}
+\end{table}
+
+    
+\section{Future Aspects}
+This study differs from previous research on the circular economy by conducting a comprehensive analysis of its impacts on both economic and environmental outcomes. 
+In addition to employing traditional linear panel data regression models, this study also incorporates 5 ways of machine learning techniques to perform variable importance analysis, aiming to identify key circular economy indicators that influence crucially economic performance and environmental quality.
+
+Based on the preliminary and (relatively) rudimentary results, several ambitious directions are proposed for the future research:
+
+First, there are many additional variables that could better capture the degree of circular economy implementation. 
+Including such as but not limited to more circular economy indicators—such as the City/County Circular Material Use Rate, Secondary Raw Materials Usage, proportion of Outstanding Enterprises in Resource Circulation, could enrich our analysis. 
+Furthermore, as many countries are beginning to adopt circular economy practices, robustness checks and comparative studies across countries or regions could provide deeper insights.
+
+Second, while this study primary focuses on key circular economy variables affecting economic and environmental outcomes, there are many other potential influencing factors. 
+Incorporating these into the analysis could allow for the development of predictive models using machine learning algorithms to forecast variables such as CO\textsubscript{2} emissions or Air Quality Index (AQI) Value, or even House Pricing, will be much more intriguing.
+
+Lastly, aside from implementation of machine method to give summary results, apply it to prediction, causal inference (In particular, we can conduct a Regression Discontiunity on the proportion of environment budget. It is juat a sketch, however, we may be more cautious on examining the feasabilities), or apply to environmental Kuznets curve are also worth exploring, can help clarify more and being more insigtful when formating policies.
+\newpage
+
+
+\begin{thebibliography}{}
+
+\bibitem[Boundling(1966)]{Boundling1966}
+Boundling, K. E. (1966). The economics of the coming spaceship Earth. In H. Jarrett (Ed.), \textit{Environmental quality in a growing economy} (pp. 3–14). Johns Hopkins University Press.
+
+\bibitem[Ellen MacArthur Foundation(2015)]{EMF2015}
+Ellen MacArthur Foundation. (2015). \textit{Towards the circular economy: Economic and business rationale for an accelerated transition}. Retrieved from \url{https://www.ellenmacarthurfoundation.org}
+
+\bibitem[European Commission(2020)]{EC2020}
+European Commission. (2020). \textit{Circular economy action plan: For a cleaner and more competitive Europe}. Retrieved from \url{https://ec.europa.eu/environment/circular-economy/}
+
+\bibitem[Ex'TAX Project(2022)]{ExTax2022}
+Ex'TAX Project. (2022). \textit{Tax as a force for good: Aligning tax systems with the SDGs and the circular economy}. Retrieved from \url{https://www.ex-tax.com}
+
+\bibitem[Radeivojević et al.(2024)]{Radivojevic2024}
+Radivojević, V., Jovanović, L., \& Milinković, D. (2024). The impact of circular economy indicators on GDP per capita: Evidence from the European Union. \textit{Sustainability}, \textit{16}(4), 1145. https://doi.org/10.xxxx/su16041145
+
+\bibitem[Tanatu et al.(2018)]{Tanatu2018}
+Tanatu, A., Vasilescu, M. D., \& Dobre, R. (2018). Dependencies between circular economy indicators in the European Union. \textit{Romanian Journal of Economic Forecasting}, \textit{21}(4), 89–101.
+
+\bibitem[Weetman(2016)]{Weetman2016}
+Weetman, C. (2016). \textit{A circular economy handbook for business and supply chains}. Kogan Page Publishers.
+
+\end{thebibliography}
+
+
+\end{document}

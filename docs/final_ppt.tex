@@ -1,0 +1,533 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usecolortheme{dolphin}
+\useoutertheme{smoothbars}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{booktabs} % 表格更專業
+\usetikzlibrary{positioning, arrows.meta}
+
+
+
+
+% 設定 R 語言的程式碼格式
+\lstset{
+    language=R,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    breaklines=true,
+    showstringspaces=false,
+    frame=single
+}
+
+% 加入點點導航條
+\setbeamertemplate{headline}{
+  \begin{beamercolorbox}[ht=2.5ex,dp=1ex,left]{section in head/foot}
+    \hspace{1em} \insertsectionnavigationhorizontal{\textwidth}{}{}
+  \end{beamercolorbox}
+}
+
+\author{Yuze Tsai}
+\title{Machine Learning Project}
+\subtitle{Approach for Investigating the Impact of Circular Economy on Taiwan's Economy and the Energy efficiency}
+
+\begin{document}
+
+
+
+    \frame {
+        \titlepage
+    }
+
+\AtBeginSection[]{
+    % 目錄頁
+\begin{frame}{Table of Contents}
+    \tableofcontents[currentsection]
+\end{frame}
+}
+\section{Review and Modifications}
+
+\begin{frame}
+    \frametitle{Overview of Project Structure}
+    \begin{itemize}
+        \item \textbf{Goal:} Investigate the impact of circular economy policies on Taiwan's economic development and energy efficiency (2014–2023).
+        \item \textbf{Data:} 
+        \begin{itemize}
+            \item \textit{Dependent Variables:} Income, Electricity consumption per capita, Housing vacancy rate
+            \item \textit{Independent Variables:} Environmental taxes, recycling rate, green infrastructure, etc.
+        \end{itemize}
+        \item \textbf{Methods(previously):}
+        \begin{itemize}
+            \item Panel data regression (Fixed vs. Random Effects)
+            \item Machine learning models: XGBoost, Random Forest, SVM
+        \end{itemize}
+    \end{itemize}
+    \vspace{0.5cm}
+    \textbf{\textcolor{red!70!black}{Version updated: Catboost, LightGBM ML models, and take $R^2$ and SHAP value for interpretation}} 
+\end{frame}
+
+\begin{frame}{Review the Assumptions}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|p{8cm}|}
+    \hline
+    \textbf{Hypothesis} & \textbf{Statement} \\
+    \hline
+    1 & Environmental budgets and recycling improve electricity efficiency  \\
+    \hline
+    2 & Landfill/incineration harm income, poor recycling lowers income \\
+    \hline
+    3 & Waste positively linked to income and electricity usage, negatively to vacancy \\
+    \hline
+    4 & Renewable energy capacity improves income and electricity efficiency \\
+    \hline
+    \end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}{SHAP (SHapley Additive Explanations)}
+    \begin{itemize}
+        \item SHAP assigns each feature an importance value for prediction.
+        \item Based on cooperative game theory—accounts for all possible feature combinations.
+        \item \textbf{\textcolor{green!70!black}{Advantages:}}
+            \begin{itemize}
+                \item Global and local interpretability
+                \item Indicates both direction (+/-) and magnitude of effect
+                \item Helps identify nonlinear thresholds and interactions
+            \end{itemize}
+        \item \textbf{Applied to:} XGBoost, CatBoost, LightGBM, RF, and SVM
+    \end{itemize}
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/9f5beaf45b0985fee227a753f350776a.png}
+    
+    \label{fig:correlation-heatmap}
+\end{figure} 
+\end{frame}
+\section{Results}
+%====================== Slide 1 =====================
+\begin{frame}{Correlation Overview}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{/Users/yuzetsai/Desktop/output.png}
+        \caption{Correlation Heat Map of Independent Variables}
+    \end{figure}
+\end{frame}
+
+%====================== Slide 2 =====================
+\begin{frame}{Panel Regression: Household Income}
+    \begin{itemize}
+        \item Fixed Effects (FE) vs Random Effects (RE) models.
+        \item Preferred: FE due to focus on within-unit variation.
+        \item \textbf{Within R\textsuperscript{2} (FE): 0.5755} 
+    \end{itemize}
+    
+\begin{table}[H]
+    \caption{Model Comparison of Household Income}
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lcc}
+    \toprule
+     & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+    \midrule
+    \textbf{Dep. Variable} & Household\_income & Household\_income \\
+    \textbf{R-squared} & 0.5755 & 0.5269 \\
+    \textbf{F-statistic} & 16.718 & 15.717 \\
+    \midrule
+    \textbf{General\_waste\_recycling\_rate} & 1.656e+04 (0.3543) & 1.565e+04 (0.3247) \\
+    \textbf{Budget\_structure\_ratio\_for\_environmental} & -2.424e+04 (-1.5064) & -2.416e+04 (-1.4588) \\
+    \textbf{Proportion\_of\_environmental\_fines} & -1656.4 (-0.3080) & -1520.4 (-0.2741) \\
+    \textbf{per\_capita\_incinerated\_waste\_kg} & -1.459e+04 (-1.0786) & -1.509e+04 (-1.0815) \\
+    \textbf{per\_capita\_landfilled\_waste\_kg} & -8152.9 (-0.7027) & -8504.2 (-0.7109) \\
+    \textbf{per\_capita\_generation\_of\_general\_waste\_kg} & 9.208e+04 (0.9104) & 9.113e+04 (0.8736) \\
+    \textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 2.426e+04 (2.6360)$^{***}$ & 2.446e+04 (2.5775)$^{***}$ \\
+    \textbf{per\_capita\_food\_waste\_kg} & -6.258e+04 (-1.0021) & -6.412e+04 (-0.9958) \\
+    \textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & -1.877e+04 (-0.1813) & -1.786e+04 (-0.1673) \\
+    \midrule
+    \bottomrule
+    \end{tabular}%
+    }
+\end{table}
+
+\end{frame}
+
+%====================== Slide 3 =====================
+\begin{frame}{Panel Regression: Electricity Usage}
+    \begin{itemize}
+        \item Dependent variable: Per Capita Electricity Usage.
+        \item \textbf{\textcolor{red!70!black}{HOrriBlE explanatory power: Within R\textsuperscript{2} = 0.0538.}}
+    \end{itemize}
+\begin{table}[H]
+\centering
+\caption{Model Comparison of Per Capita Electricity Usage}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+\midrule
+\textbf{Dep. Variable} & p-c\_electricity\_usage & p-c\_electricity\_usage \\
+\textbf{R-squared} & 0.0538 & 0.0430 \\
+\textbf{F-statistic} & 0.7588 & 0.6891 \\
+\midrule
+\textbf{General\_waste\_recycling\_rate} & -1748.9 (-1.0245) & -1630.1 (-0.9591) \\
+\textbf{Budget\_structure\_ratio\_for\_environmental} & 1469.0 (1.5002) & 1385.3 (1.4779) \\
+\textbf{Proportion\_of\_environmental\_fines} & -56.664 (-0.1633) & -9.4697 (-0.0272) \\
+\textbf{per\_capita\_incinerated\_waste\_kg} & -446.12 (-0.5155) & -573.76 (-0.6610) \\
+\textbf{per\_capita\_landfilled\_waste\_kg} & -246.51 (-0.3294) & -371.66 (-0.4985) \\
+\textbf{per\_capita\_generation\_of\_general\_waste\_kg} & -3261.6 (-0.7386) & -2803.4 (-0.6335) \\
+\textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 374.06 (0.6450) & 415.61 (0.7202) \\
+\textbf{per\_capita\_food\_waste\_kg} & 5519.8 (1.7388)$^{*}$ & 4844.5 (1.5677) \\
+\textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & 4079.9 (0.9360) & 3577.6 (0.8217) \\
+\midrule
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+\end{frame}
+
+%====================== Slide 4 =====================
+\begin{frame}{Panel Regression: Vacancy Rate}
+    \begin{itemize}
+        \item Dependent variable: Vacancy Rate.
+        \item \textbf{Within R\textsuperscript{2} = 0.3796.}
+    \end{itemize}
+    \begin{table}[H]
+        \centering
+        \caption{Model Comparison of Vacancy rate}
+        \resizebox{\textwidth}{!}{%
+        \begin{tabular}{lcc}
+        \toprule
+         & \textbf{Fixed Effects} & \textbf{Random Effects} \\
+        \midrule
+        \textbf{Dep. Variable} & Vacancy\_rate & Vacancy\_rate \\
+        \textbf{R-squared} & 0.3796 & 0.3371 \\
+        \textbf{F-statistic} & 8.1573 & 7.7976 \\
+        \midrule
+        \textbf{General\_waste\_recycling\_rate} & 1.1738 (4.8452)$^{***}$ & 1.1819 (4.7618)$^{***}$ \\
+        \textbf{Budget\_structure\_ratio\_for\_environmental} & 0.1066 (0.7670) & 0.1001 (0.7037) \\
+        \textbf{Proportion\_of\_environmental\_fines} & 0.0098 (0.1999) & 0.0108 (0.2138) \\
+        \textbf{per\_capita\_incinerated\_waste\_kg} & -0.1464 (-1.1922) & -0.1513 (-1.2023) \\
+        \textbf{per\_capita\_landfilled\_waste\_kg} & -0.3178 (-2.9923)$^{***}$ & -0.3194 (-2.9346)$^{***}$ \\
+        \textbf{per\_capita\_generation\_of\_general\_waste\_kg} & 2.6392 (4.2111)$^{***}$ & 2.6646 (4.1490)$^{***}$ \\
+        \textbf{per\_capita\_t\_capacity\_of\_renewable\_energy} & 0.1055 (1.2815) & 0.1081 (1.2824) \\
+        \textbf{per\_capita\_food\_waste\_kg} & -0.7543 (-1.6744)$^{*}$ & -0.7786 (-1.6881)$^{*}$ \\
+        \textbf{per\_capita\_resource\_recovery\_by\_local\_authorities\_kg} & -2.7926 (-4.5143)$^{***}$ & -2.8214 (-4.4511)$^{***}$ \\
+        \midrule
+        \bottomrule
+        \end{tabular}%
+        }
+        \end{table}
+\end{frame}
+
+%====================== Slide 5 =====================
+\begin{frame}{Results for Household Income: Ensemble Models}
+    \begin{itemize}
+        \item Applied ensemble methods: RF, LightGBM, CatBoost, XGBoost.
+        \item Compared feature importance via SHAP values.
+
+    \end{itemize}
+    \begin{figure}[H]
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/RF_HI.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/LIghtgbm_HI.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/Cat_HI.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/Xgboost_HI.png}
+    \end{figure}
+\end{frame}
+
+%====================== Slide 6 =====================
+\begin{frame}{SHAP Summary: Top Features for Household Income}
+    \begin{itemize}
+        \item SHAP values quantify each feature’s impact on prediction.
+        \item \textbf{\textcolor{green!70!black}{Strongest positive influence: Budget structure ratio and Recycling rate}}
+        \item \textbf{\textcolor{red!70!black}{Negative: Food waste per capita and renewable energy capacity.}}
+    \end{itemize}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lrrrr}
+        \toprule
+        Feature & XGBoost & RF & CatBoost & LightGBM \\
+        \midrule
+        Budget ratio (env.) & 135392 & 184066 & 103778 & 140778 \\
+        Recycling rate & 43613 & 56781 & 44104 & 106733 \\
+        Waste generation & 30847 & 11152 & 29307 & 1692 \\
+        Food waste per capita & -76820 & -72989 & -63354 & -84387 \\
+        Renewable capacity & -20539 & -16840 & -22892 & -28026 \\
+        \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Where is SVM?}
+    \begin{figure}
+         \includegraphics[width=0.75\linewidth]{/Users/yuzetsai/Desktop/494359492_690801540561686_1565076619134909513_n.jpg}
+    \end{figure}  
+\end{frame}
+
+%====================== Slide X =====================
+\begin{frame}{Results for Per Capita Electricity Usage: Ensemble Models}
+    \begin{figure}[H]
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_rf.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Light.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Cat.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/EU_Xgboost.png}
+    \end{figure}
+\end{frame}
+
+%====================== Slide Y =====================
+\begin{frame}{SHAP Summary: Feature Importance for Electricity Usage}
+    \begin{itemize}
+        \item SHAP values indicate feature impact on model output.
+        \item \textbf{\textcolor{green!70!black}{Key features with highest influence: Budget structure ratio, Food waste per capita, Recycling rate.}}
+        \item \textbf{\textcolor{red!70!black}{Lower influence or negative impact: Incinerated waste, landfilled waste.}}
+    \end{itemize}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lrrrr}
+        \toprule
+        Feature & XGBoost & RF & CatBoost & LightGBM \\
+        \midrule
+        Budget ratio (env.) & 5818 & 3 & 872 & 2683 \\
+        Food waste per capita & 5680 & 0 & 292 & 307 \\
+        General waste recycling rate & 903 & 0 & 880 & 1825 \\
+        Environmental fines prop & 552 & -1 & 902 & 2782 \\
+        Incinerated waste per capita & -283 & 0 & -1143 & -195 \\
+        \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+
+\begin{frame}{Results for Vacancy Rate: Ensemble Models}
+    \begin{figure}[H]
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_rf.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_light.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_cat.png}
+        \includegraphics[width=0.45\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/VC_Xgboost.png}
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}{SHAP Summary: Feature Importance for Vacancy Rate}
+    \begin{itemize}
+        \item SHAP values indicate feature impact on model output.
+        \item \textbf{\textcolor{green!70!black}{Key features with highest influence: Budget structure ratio, Food waste per capita, Recycling rate.}}
+        \item \textbf{\textcolor{red!70!black}{Inconsistent results: Environmental fines prop.}}
+    \end{itemize}
+    \begin{table}[H]
+       \centering
+        \begin{tabular}{lrrrr}
+        \toprule
+        Feature & XGBoost & RF & CatBoost & LightGBM \\
+        \hline
+        Food waste per capita & 1.146 & 0.000 & 0.786 & 0.334 \\
+        Environmental fines prop & 0.273 & 0.000 & -0.201 & -0.229 \\
+        Incinerated waste per capita & 0.093 & 0.000 & 0.268 & -0.320 \\
+        Resource recovery by local gov & -0.113 & 0.000 & -0.149 & -0.457 \\
+        Budget ratio (env.) & -1.418 & 0.017 & -0.547 & -1.327 \\
+        \hline
+        \end{tabular}
+\end{table}
+\end{frame}
+
+\section{Discussions and Implications}
+\begin{frame}{R-squared Comparison Across Models}
+\begin{table}[htbp]
+    \small
+    \centering
+    \begin{tabular}{lrrrrr}
+    \toprule
+    \textbf{Feature} & XGBoost & RF & LightGBM & CatBoost & FE Panel \\
+    \midrule
+    Household Income & 0.720 & 0.688 & 0.699 & \textbf{0.752} & 0.578 \\
+    Per Capita Electricity & 0.427 & \textbf{0.479} & 0.474 & 0.420 & 0.054 \\
+    Vacancy Rate & 0.736 & 0.659 & 0.600 & \textbf{0.743} & 0.380 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+    \begin{itemize}
+        \item \textbf{Household Income:} CatBoost leads (0.752), showing strong prediction capability (overall $ R^2 > 0.5$).
+        \item \textbf{Electricity Usage:} All models weak ($R^2 < 0.5$), Random Forest best (0.479); FE is \textcolor{red}{\textbf{terrible}}.
+        \item \textbf{Vacancy Rate:} CatBoost and XGBoost both Strongest
+    \end{itemize}
+\end{frame}
+
+%%
+% --- Variable Importance: Tables Summary ---
+\begin{frame}{Variable Importance: Overview}
+    \begin{itemize}
+        \item Significance based on SHAP for ML and statistical significance for FE.
+        \item Summary scores computed: +1 (positive effect), $-1$ (negative), 0 (non-significant).
+    \end{itemize}
+
+\begin{table}[H]
+\centering
+\tiny
+    \begin{tabular}{lccc}
+    \toprule
+    \textbf{Variable} & \textbf{Household Income} & \textbf{Pc Electricity Usage} & \textbf{Vacancy Rate} \\
+    \midrule
+    Budget structure ratio for environmental & +4 & +4 & \textcolor{red}{$-2$} \\
+    General waste recycling rate             & +3 & +2 & +1 \\
+    Per capita generation of general waste (kg) & 0 & 0 & +1 \\
+    Per capita resource recovery by local authorities & 0 & 0 & \textcolor{red}{$-2$} \\
+    Per capita landfilled waste (kg)         & 0 & \textcolor{red}{$-1$} & 0 \\
+    Proportion of environmental fines        & \textcolor{red}{$-1$} & +2 & 0 \\
+    Per capita incinerated waste (kg)        & 0 & \textcolor{red}{$-1$} & 0 \\
+    Per capita capacity of renewable energy  & +1 & +1 & \textcolor{red}{$-1$} \\
+    Per capita food waste (kg)               & \textcolor{red}{$-4$} & +2 & +1 \\
+    \bottomrule
+    \end{tabular}
+\caption{Summary of Variable Scores across Models }
+\end{table}
+\end{frame}
+
+% --- Variable Interpretation ---
+\begin{frame}{Selected Variable Interpretations}
+    \begin{itemize}
+        \item \textbf{Environmental Budget:} Positively linked to income and electricity use, lowers vacancy.
+        \item \textbf{Recycling Rate:} Generally positive across all $\Rightarrow$ boosts income, slight energy trade-off.
+        \item \textbf{Food Waste:} Negatively affects income, increases usage and vacancy $\Rightarrow$ inefficiency signal.
+        \item \textbf{Renewable Capacity:} Some income gains, inconsistent electricity effects.
+    \end{itemize}
+\end{frame}
+
+% --- Assumption Evaluation ---
+\begin{frame}{Evaluation of Assumptions}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|p{5cm}|c|}
+    \hline
+    \textbf{Hypothesis} & \textbf{Statement} & \textbf{Conclusion} \\
+    \hline
+    1 & Environmental budgets and recycling improve electricity efficiency & \textcolor{red}{\textbf{Inversely supported}} \\
+    \hline
+    2 & Landfill/incineration harm income, poor recycling lowers income & \textcolor{brown}{\textbf{Partially supported}} \\
+    \hline
+    3 & Waste positively linked to income and electricity usage, negatively to vacancy & \textcolor{brown}{\textbf{Partially supported}} \\
+    \hline
+    4 & Renewable energy capacity improves income and electricity efficiency & \textcolor{brown}{\textbf{Partially supported}} \\
+    \hline
+    \end{tabular}
+\end{table}
+\end{frame}
+\begin{frame}{Reconsideration}
+       \begin{figure}[H]
+        \includegraphics[width=0.8\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/unnamed.jpg}
+    \end{figure}
+\end{frame}
+
+
+\section{Future Directions and Conclusions}
+\begin{frame}{Future Directions I: Data and Comparative Scope}
+\small
+
+\textbf{Richer Circular Economy Indicators:}
+\begin{itemize}
+    \item Extend circular economy metrics:
+    \begin{itemize}
+        \item Material Use Rate, Secondary Raw Materials Share
+        \item Proportion of Resource-Circulation Enterprises
+    \end{itemize}
+    \item Improve measurement of policy implementation intensity
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Comparative Scope:}
+\begin{itemize}
+    \item Cross-country or cross-regional comparisons
+    \item Robustness checks in different policy contexts
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Additional Outcomes:}
+\begin{itemize}
+    \item Forecast CO\textsubscript{2} emissions, AQI, or house prices using ML
+    \item Explore long-run dynamics of sustainability indicators
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Future Directions II: Methods Insight}
+\small
+
+\textbf{Causal Inference:}
+\begin{itemize}
+    \item Explore Regression Discontinuity on environmental budget shares
+    \item Investigate feasibility of quasi-experimental designs
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Structural Analysis:}
+\begin{itemize}
+    \item Integrate circular economy into the Environmental Kuznets Curve (EKC) framework
+    \item Combine theory-driven models with data-driven tools
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Conclusion: Summary of Findings}
+\small
+
+\textbf{Study Goal:}  
+Assess how circular economy policies affect income, electricity use, and vacancy rates across Taiwan’s 22 cities (2014–2023).
+
+\vspace{0.5em}
+\textbf{Methods:}  
+Panel regression vs. Machine Learning (CatBoost, XGBoost, etc.)
+
+\vspace{0.5em}
+\textbf{Key Findings:}
+\begin{itemize}
+  \item \textcolor{green!60!black}{Environmental budgets, renewables $\Rightarrow$ ↑ income}
+  \item \textcolor{red!70!black}{Food waste $\Rightarrow$ ↑ electricity use and ↑ vacancy}
+  \item \textbf{ML models outperform regression}, especially CatBoost (SHAP used for interpretation)
+  \item SVM underperformed due to computational inefficiency
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Conclusion: Policy and Methodological Takeaways}
+\small
+
+\textbf{Model Implications:}
+\begin{itemize}
+    \item \textbf{ML excels at prediction} — best for income and vacancy
+    \item \textbf{Electricity usage hard to model} — needs richer features
+    \item \textbf{Method should match goal:} prediction vs. explanation
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Policy Relevance:}
+\begin{itemize}
+    \item Recycling and environmental investment show economic benefits
+    \item Mixed/uncertain effects call for \textbf{re-examining assumptions}
+    \item Circular economy indicators can inform \textbf{evidence-based, local-level policy}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Scrutinisation}
+       \begin{figure}[H]
+        \includegraphics[width=0.5\linewidth]{5N92K5_qrcode.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Thanks !}
+       \begin{figure}[H]
+        \includegraphics[width=0.5\linewidth]{/Users/yuzetsai/Desktop/untitled_folder/images.jpeg}
+    \end{figure}
+\end{frame}
+
+
+
+
+
+
+
+\end{document}

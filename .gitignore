@@ -1,0 +1,32 @@
+# Python
+.venv/
+重新建立/
+__pycache__/
+*.pyc
+catboost_info/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.nav
+*.snm
+*.vrb
+*.synctex.gz
+*.toc
+*.out
+texput.log
+
+# macOS
+.DS_Store
+
+# Apple formats
+*.numbers
+*.pages
+
+# Raw working directory (not restructured)
+ML code/
+
+# Misc local files
+*.jpeg
+*.jpg
+lab.*
